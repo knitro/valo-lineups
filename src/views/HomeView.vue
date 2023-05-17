@@ -11,26 +11,24 @@
           <v-img :src="logo"></v-img>
         </v-list-item-avatar>
 
-        <v-list-item-title>Valo Lineups</v-list-item-title>
+        <v-list-item-content>
+          <v-list-item-title>Valo Lineups</v-list-item-title>
+        </v-list-item-content>
 
-        <v-btn icon @click.stop="mini = !mini">
-          <v-icon>mdi-chevron-left</v-icon>
+        <v-btn icon v-if="!loggedIn" @click="pressLoginButton">
+          <v-icon>mdi-login</v-icon>
+        </v-btn>
+        <v-btn icon v-else @click="pressProfileButton">
+          <v-icon>mdi-account-circle</v-icon>
         </v-btn>
       </v-list-item>
 
       <v-divider></v-divider>
 
       <v-list dense>
-        <!-- <v-list-item>
-          <v-img :src="selectedMap.image"></v-img>
-        </v-list-item>
         <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title>
-              Selected Map: {{ selectedMap.label }}
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item> -->
+          <v-img :src="selectedMap.image" class="map-image"></v-img>
+        </v-list-item>
         <v-list-item>
           <v-select
             v-model="selectedMap"
@@ -38,31 +36,25 @@
             label="Map"
             item-text="label"
             return-object
-            @change="filterData"
+            @change="filterData(true)"
           >
           </v-select>
         </v-list-item>
 
         <v-list-item>
-          <v-select
-            v-model="selectedSites"
-            :items="['A', 'B', 'C']"
-            label="Sites"
-            item-text="label"
-            multiple
-            @change="filterData"
+          <v-img
+            :src="selectedMap.image"
+            class="map-image"
+            gradient="to top right, rgba(255,255,255,1), rgba(255,255,255,1)"
           >
-          </v-select>
+            <v-img
+              :src="selectedAgent.image"
+              contain
+              max-height="126"
+              class="agent-display"
+            ></v-img>
+          </v-img>
         </v-list-item>
-
-        <!-- <v-list-item>
-          <v-list-item-avatar>
-            <v-img :src="selectedAgent.image"></v-img>
-          </v-list-item-avatar>
-          <v-list-item-title>
-            Selected Agent: {{ selectedAgent.label }}
-          </v-list-item-title>
-        </v-list-item> -->
         <v-list-item>
           <v-select
             v-model="selectedAgent"
@@ -70,20 +62,58 @@
             label="Agent"
             item-text="label"
             return-object
-            @change="filterData"
+            @change="filterData(true)"
           >
           </v-select>
+        </v-list-item>
+
+        <v-list-item>
+          <v-select
+            v-model="selectedSites"
+            :items="selectedMap.sites"
+            label="Sites"
+            item-text="label"
+            multiple
+            @change="filterData(false)"
+          >
+          </v-select>
+        </v-list-item>
+
+        <v-list-item>
+          <v-switch
+            v-model="showFavourites"
+            @change="favouriteCheck(showFavourites)"
+          >
+            <template v-slot:label>
+              Show Favourites
+              <v-icon v-show="!showFavourites">mdi-star-outline</v-icon>
+              <v-icon v-show="showFavourites">mdi-star</v-icon>
+            </template>
+          </v-switch>
+        </v-list-item>
+
+        <v-list-item>
+          <v-dialog v-model="showAddScreen" max-width="800px">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                depressed
+                elevation="2"
+                raised
+                rounded
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon left> mdi-plus </v-icon>
+                Add Lineup
+              </v-btn>
+            </template>
+            <add-lineup></add-lineup>
+          </v-dialog>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
     <v-container>
-      <!-- <v-row no-gutters>
-        <v-col>Selected Map: {{ selectedMap.label }}</v-col>
-        <v-col>Selected Agent: {{ selectedAgent.label }}</v-col>
-        <v-col>Selected Site: {{ selectedSites }}</v-col>
-      </v-row> -->
-
       <v-row no-gutters id="draggableParent">
         <v-col
           v-for="item in filteredData"
@@ -92,16 +122,18 @@
           "
           class="block-draggable"
           align-self="center"
-          :cols="3"
           style="justify-items: center"
         >
           <info-card
-            :width="400"
+            :id="item.id"
+            :width="390"
             :label="item.name"
             :site="item.site"
             :locationImage="item.locationImage"
             :lineupImage="item.lineupImage"
             :resultImage="item.resultImage"
+            :isFavourite="favourites.includes(item.id)"
+            :favouriteButtonCallback="callbackFavouritePressed"
           ></info-card>
         </v-col>
       </v-row>
@@ -111,31 +143,35 @@
 
 <script lang="ts">
 import InfoCard from "@/components/InfoCard.vue";
-import AGENT_DATA, { AgentInformation } from "@/data/agents";
-import LINEUPS_DATA from "@/data/lineups/lineups_data";
+import AGENT_DATA from "@/data/agents";
+import LINEUPS_DATA, { generateTestLineups } from "@/data/lineups/lineups_data";
+import { LineupsData } from "@/data/lineups/lineups_interfaces";
+import MAP_DATA from "@/data/maps";
+import { getNameOrEmail, isLoggedIn } from "@/firebase/auth/auth";
 import {
-  LineupsData,
-  ValorantAgent,
-  ValorantMap,
-} from "@/data/lineups/lineups_interfaces";
-import MAP_DATA, { MapInformation } from "@/data/maps";
+  addToFavourites,
+  getFavourites,
+  removeFromFavourites,
+} from "@/firebase/database/database";
+import {
+  getLineups,
+  getLineupsFavourites,
+} from "@/firebase/firestore/firestore";
+import router from "@/router";
 import { Sortable, Plugins } from "@shopify/draggable";
 import Vue from "vue";
+import AddLineup from "@/components/AddLineup.vue";
 
 export default Vue.extend({
   name: "HomeView",
-
-  components: { InfoCard },
-  setup() {
+  components: { InfoCard, AddLineup },
+  data() {
     return {
       logo: require("@/assets/logo.png"),
       MAP_DATA: MAP_DATA,
       AGENT_DATA: AGENT_DATA,
       lineupData: LINEUPS_DATA,
-    };
-  },
-  data() {
-    return {
+
       filteredData: [] as LineupsData[],
       selectedMap: MAP_DATA[0],
       selectedAgent: AGENT_DATA[0],
@@ -143,13 +179,21 @@ export default Vue.extend({
 
       drawer: true,
       mini: true,
+
+      displayName: "",
+      loggedIn: false,
+
+      showFavourites: false,
+      favourites: [] as string[],
+
+      showAddScreen: false,
     };
   },
   methods: {
-    filterData() {
+    async filterData(resetSites: boolean) {
       const filterMap = (value: LineupsData) => {
         const selectedMapLabel = this.selectedMap.label;
-        const currentMapLabel = ValorantMap[value.map];
+        const currentMapLabel = value.map;
 
         if (selectedMapLabel === undefined) {
           console.log("Selected Map Undefined");
@@ -167,7 +211,7 @@ export default Vue.extend({
       };
       const filterAgent = (value: LineupsData) => {
         const selectedAgentLabel = this.selectedAgent.label;
-        const currentAgentLabel = ValorantAgent[value.agent];
+        const currentAgentLabel = value.agent;
 
         if (selectedAgentLabel === undefined) {
           console.log("Selected Agent Undefined");
@@ -187,17 +231,80 @@ export default Vue.extend({
         return this.selectedSites.includes(value.site);
       };
 
+      if (resetSites) {
+        this.selectedSites = this.selectedMap.sites;
+        this.lineupData = await getLineups(
+          this.selectedMap.data,
+          this.selectedAgent.data
+        );
+      }
+
       const freshFilteredData = this.lineupData
         .filter(filterMap)
         .filter(filterAgent)
         .filter(filterSite);
       this.filteredData = freshFilteredData;
-      console.log("Data Filtered");
-      console.log(freshFilteredData);
-      console.log(this.filteredData);
+    },
+    pressLoginButton() {
+      router.push("/login");
+    },
+    pressProfileButton() {
+      router.push("/profile");
+    },
+    pressAddLineupButton() {
+      router.push("/add");
+    },
+
+    async favouriteCheck(showFavouritesParam: boolean) {
+      if (showFavouritesParam) {
+        const favouritesLinesups = await getLineupsFavourites(this.favourites);
+        this.filteredData = favouritesLinesups;
+      }
+    },
+    setupFavouritesListener() {
+      const callbackFunction = (a: string[]) => {
+        this.favourites = a;
+      };
+      getFavourites(callbackFunction);
+    },
+    async callbackFavouritePressed(id: string, isFavourited: boolean) {
+      console.log("id = " + id + " | isFavourited = " + isFavourited);
+
+      if (isFavourited) {
+        let returnBool = await addToFavourites(id);
+        const suffix = returnBool ? "Success" : "Failure";
+        console.log("Adding Favourite was a " + suffix);
+      } else {
+        let returnBool = await removeFromFavourites(id);
+        const suffix = returnBool ? "Success" : "Failure";
+        console.log("Removing Favourite was a " + suffix);
+      }
     },
   },
   mounted() {
+    // Firebase Login
+    this.loggedIn = isLoggedIn();
+
+    // Setup Firebase Favourites if Logged in
+    if (this.loggedIn) {
+      this.setupFavouritesListener();
+    }
+
+    // Name / Email from Firebase
+    const retrievedName = getNameOrEmail();
+    if (retrievedName !== null) {
+      this.displayName = retrievedName;
+    }
+
+    // Open up Sidebar
+    let setMini = () => {
+      this.mini = false;
+    };
+    setTimeout(function () {
+      setMini();
+    }, 500);
+
+    // Sortable
     const containers = document.querySelectorAll("#draggableParent");
     if (containers.length === 0) {
       return false;
@@ -213,7 +320,10 @@ export default Vue.extend({
         duration: 200,
         easingFunction: "ease-in-out",
       },
+      distance: 1, // Needs to move at least 1 pixel before triggering. Needed for button pressing on sortable items
     });
+
+    // Sortable Listeners
     sortable.on("sortable:start", () => {
       console.log("sortable:start");
     });
@@ -226,6 +336,10 @@ export default Vue.extend({
     sortable.on("sortable:stop", () => {
       console.log("sortable:stop");
     });
+
+    // Initial Query
+    // generateTestLineups();
+    this.filterData(true);
   },
 });
 </script>
@@ -245,5 +359,14 @@ export default Vue.extend({
 
 .block-draggable {
   align-content: center;
+  margin: 4px;
+}
+
+.map-image {
+  border-radius: 5px;
+}
+
+.agent-display {
+  border-radius: 5px;
 }
 </style>

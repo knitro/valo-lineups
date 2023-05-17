@@ -2,6 +2,7 @@ import { LineupsData, ValorantAgent, ValorantMap } from "../lineups_interfaces";
 
 const haven_brimstone: LineupsData[] = [
   {
+    id: "1",
     map: ValorantMap.HAVEN,
     site: "C",
     agent: ValorantAgent.BRIMSTONE,
@@ -14,6 +15,7 @@ const haven_brimstone: LineupsData[] = [
       "https://cdn.discordapp.com/attachments/1067922239015624794/1067922521762054215/image.png",
   },
   {
+    id: "2",
     map: ValorantMap.HAVEN,
     site: "B",
     agent: ValorantAgent.BRIMSTONE,

@@ -7,19 +7,51 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn color="white" icon>
-        <v-icon>mdi-star</v-icon>
+      <v-btn
+        color="white"
+        icon
+        @click="favouriteButtonCallback(id, !isFavourite)"
+      >
+        <v-icon v-show="!isFavourite">mdi-star-outline</v-icon>
+        <v-icon v-show="isFavourite">mdi-star</v-icon>
       </v-btn>
     </v-toolbar>
 
     <v-card>
-      <v-img :src="locationImage" :width="width"></v-img>
+      <v-img :src="locationImage" :width="width" :height="(width / 16) * 9">
+        <template v-slot:placeholder>
+          <div class="d-flex align-center justify-center fill-height">
+            <v-progress-circular
+              color="grey-lighten-4"
+              indeterminate
+            ></v-progress-circular>
+          </div>
+        </template>
+      </v-img>
     </v-card>
     <v-card>
-      <v-img :src="lineupImage" :width="width"></v-img>
+      <v-img :src="lineupImage" :width="width" :height="(width / 16) * 9">
+        <template v-slot:placeholder>
+          <div class="d-flex align-center justify-center fill-height">
+            <v-progress-circular
+              color="grey-lighten-4"
+              indeterminate
+            ></v-progress-circular>
+          </div>
+        </template>
+      </v-img>
     </v-card>
     <v-card>
-      <v-img :src="resultImage" :width="width"></v-img>
+      <v-img :src="resultImage" :width="width" :height="(width / 16) * 9">
+        <template v-slot:placeholder>
+          <div class="d-flex align-center justify-center fill-height">
+            <v-progress-circular
+              color="grey-lighten-4"
+              indeterminate
+            ></v-progress-circular>
+          </div>
+        </template>
+      </v-img>
     </v-card>
   </v-card>
 </template>
@@ -31,6 +63,10 @@ import { PropType } from "vue/types/v3-component-props";
 export default Vue.extend({
   name: "InfoCard",
   props: {
+    id: {
+      type: String,
+      required: true,
+    },
     width: {
       type: Number,
       required: true,
@@ -53,6 +89,14 @@ export default Vue.extend({
     },
     resultImage: {
       type: String,
+      required: true,
+    },
+    isFavourite: {
+      type: Boolean,
+      required: true,
+    },
+    favouriteButtonCallback: {
+      type: Function as PropType<(id: string, isFavourited: boolean) => void>,
       required: true,
     },
   },
