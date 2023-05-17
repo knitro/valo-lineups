@@ -11,7 +11,6 @@ export interface LineupsData {
 }
 
 export enum ValorantMap {
-  NULL = "No Map",
   ASCENT = "Ascent",
   BIND = "Bind",
   BREEZE = "Breeze",
@@ -33,7 +32,6 @@ export enum ValorantMap {
 }
 
 export enum ValorantAgent {
-  NULL = "No Agent",
   ASTRA = "Astra",
   BREACH = "Breach",
   BRIMSTONE = "Brimstone",
