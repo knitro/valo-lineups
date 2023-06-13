@@ -9,10 +9,10 @@
     >
       <div class="login-view-center">
         <v-card dark color="rgba(103, 58, 183, 0.95)" width="500">
-          <v-card-title class="text-h5"> Login into Valo Lineups </v-card-title>
+          <v-card-title class="text-h5"> Login into Valups </v-card-title>
 
           <v-card-subtitle>
-            Login or Register to Valo Lineups to set favourites and add lineups!
+            Login or Register to Valups to remember your favourite lineups
           </v-card-subtitle>
 
           <v-card-text>

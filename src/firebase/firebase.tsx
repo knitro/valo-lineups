@@ -8,15 +8,15 @@ import { getFirestore } from "firebase/firestore";
 ////////////////////////////////////////////////////////
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyBaRiqIKe65wUS3-aRXRjgqc0xvJWLM_Qc",
-  authDomain: "valo-lineups-e3565.firebaseapp.com",
-  projectId: "valo-lineups-e3565",
-  storageBucket: "valo-lineups-e3565.appspot.com",
-  messagingSenderId: "815695938816",
-  appId: "1:815695938816:web:9797e80b8b5f3b9cd99fe5",
+  apiKey: "AIzaSyB0_vHkBQ3flyvNLDh3s8eqDEXBdZsgdm8",
+  authDomain: "valups.firebaseapp.com",
+  projectId: "valups",
+  storageBucket: "valups.appspot.com",
+  messagingSenderId: "968687293891",
+  appId: "1:968687293891:web:364b73f8e8f83a48fcd976",
   databaseURL:
-    "https://valo-lineups-e3565-default-rtdb.asia-southeast1.firebasedatabase.app",
-  // This is needed for RTDB if region is anything other than US Central 1
+    // This is needed for RTDB if region is anything other than US Central 1
+    "https://valups-default-rtdb.asia-southeast1.firebasedatabase.app/",
 };
 
 const firebaseApp: FirebaseApp = initializeApp(firebaseConfig);

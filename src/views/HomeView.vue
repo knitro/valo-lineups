@@ -12,7 +12,7 @@
         </v-list-item-avatar>
 
         <v-list-item-content>
-          <v-list-item-title>Valo Lineups</v-list-item-title>
+          <v-list-item-title>Valups</v-list-item-title>
         </v-list-item-content>
 
         <v-btn icon v-if="!loggedIn" @click="pressLoginButton">
