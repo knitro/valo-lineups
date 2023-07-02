@@ -1,24 +1,19 @@
-# valo-lineups
+# Valups
 
-## Project setup
-```
-npm install
-```
+**Valups Live Website: [https://valups.web.app](https://valups.web.app)**
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## General Code Structure
 
-### Compiles and minifies for production
-```
-npm run build
-```
+- Authentication: Firebase Authentication
+- Database: Firebase
+  - Firestore Database: Lineups
+  - Realtime Database: User Favourites
+- Hosted: Firebase Hosting
 
-### Lints and fixes files
-```
-npm run lint
-```
+## Development Procedure
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- Package Install: `npm install`
+- Development Window: `npm run serve`
+  - _Hosted on localhost:8080_
+- Project Build: `npm run build`
+- Project Manual Deployment: `firebase deploy`
