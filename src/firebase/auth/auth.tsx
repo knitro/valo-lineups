@@ -1,5 +1,6 @@
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import { authorisedUsers } from "@/data/authorised-users";
 
 /**
  * Signs out the current user from Firebase Authentication.
@@ -60,4 +61,14 @@ onAuthStateChanged(auth, (user) => {
 
 export function getUserId(): string | null {
   return auth.currentUser ? auth.currentUser.uid : null;
+}
+
+export function checkCanAddLineup(): boolean {
+  if (auth.currentUser) {
+    const userId = auth.currentUser.uid;
+    if (authorisedUsers.includes(userId)) {
+      return true;
+    }
+  }
+  return false;
 }

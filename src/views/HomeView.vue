@@ -92,7 +92,7 @@
           </v-switch>
         </v-list-item>
 
-        <v-list-item>
+        <v-list-item v-if="canAddLineup">
           <v-dialog v-model="showAddScreen" max-width="800px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn
@@ -147,7 +147,11 @@ import AGENT_DATA from "@/data/agents";
 import LINEUPS_DATA, { generateTestLineups } from "@/data/lineups/lineups_data";
 import { LineupsData } from "@/data/lineups/lineups_interfaces";
 import MAP_DATA from "@/data/maps";
-import { getNameOrEmail, isLoggedIn } from "@/firebase/auth/auth";
+import {
+  checkCanAddLineup,
+  getNameOrEmail,
+  isLoggedIn,
+} from "@/firebase/auth/auth";
 import {
   addToFavourites,
   getFavourites,
@@ -187,6 +191,8 @@ export default Vue.extend({
       favourites: [] as string[],
 
       showAddScreen: false,
+
+      canAddLineup: false,
     };
   },
   methods: {
@@ -254,7 +260,6 @@ export default Vue.extend({
     pressAddLineupButton() {
       router.push("/add");
     },
-
     async favouriteCheck(showFavouritesParam: boolean) {
       if (showFavouritesParam) {
         const favouritesLinesups = await getLineupsFavourites(this.favourites);
@@ -281,6 +286,7 @@ export default Vue.extend({
       }
     },
   },
+
   mounted() {
     // Firebase Login
     this.loggedIn = isLoggedIn();
@@ -289,6 +295,10 @@ export default Vue.extend({
     if (this.loggedIn) {
       this.setupFavouritesListener();
     }
+
+    // Check if user can add lineup
+    // Note this requires this to be set also in Firebase db permissions
+    checkCanAddLineup();
 
     // Name / Email from Firebase
     const retrievedName = getNameOrEmail();
