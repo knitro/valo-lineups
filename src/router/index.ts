@@ -3,8 +3,6 @@ import VueRouter, { RouteConfig } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import LogoutView from "@/views/LogoutView.vue";
-import ProfileView from "@/views/ProfileView.vue";
-import AddView from "@/views/AddView.vue";
 import { auth } from "@/firebase/firebase";
 
 Vue.use(VueRouter);
@@ -28,14 +26,6 @@ const routes: Array<RouteConfig> = [
       requiresAuth: true,
     },
   },
-  {
-    path: "/profile",
-    name: "profile",
-    component: ProfileView,
-    meta: {
-      requiresAuth: true,
-    },
-  },
 ];
 
 const router = new VueRouter({
@@ -48,16 +38,6 @@ router.beforeEach((to, from, next) => {
     if (to.matched.some((record) => record.meta.requiresAuth)) {
       if (!user) {
         next({ path: "/login" });
-      } else {
-        next();
-      }
-    } else {
-      next();
-    }
-
-    if (to.matched.some((record) => record.meta.hideForAuth)) {
-      if (user) {
-        next({ path: "/online" });
       } else {
         next();
       }
