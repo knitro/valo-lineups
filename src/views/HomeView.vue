@@ -18,9 +18,19 @@
         <v-btn icon v-if="!loggedIn" @click="pressLoginButton">
           <v-icon>mdi-login</v-icon>
         </v-btn>
-        <v-btn icon v-else @click="pressProfileButton">
-          <v-icon>mdi-account-circle</v-icon>
-        </v-btn>
+        <v-menu v-else top offset-x>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn v-bind="attrs" v-on="on" icon>
+              <v-icon>mdi-account-circle</v-icon>
+            </v-btn>
+          </template>
+          <v-list dense>
+            <v-list-item @click="pressLogoutButton">
+              <template v-slot:prepend> </template>
+              <v-list-item-title>Logout</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-list-item>
 
       <v-divider></v-divider>
@@ -254,8 +264,8 @@ export default Vue.extend({
     pressLoginButton() {
       router.push("/login");
     },
-    pressProfileButton() {
-      router.push("/profile");
+    pressLogoutButton() {
+      router.push("/logout");
     },
     pressAddLineupButton() {
       router.push("/add");
