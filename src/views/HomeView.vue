@@ -18,9 +18,19 @@
         <v-btn icon v-if="!loggedIn" @click="pressLoginButton">
           <v-icon>mdi-login</v-icon>
         </v-btn>
-        <v-btn icon v-else @click="pressProfileButton">
-          <v-icon>mdi-account-circle</v-icon>
-        </v-btn>
+        <v-menu v-else top offset-x>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn v-bind="attrs" v-on="on" icon>
+              <v-icon>mdi-account-circle</v-icon>
+            </v-btn>
+          </template>
+          <v-list dense>
+            <v-list-item @click="pressLogoutButton">
+              <template v-slot:prepend> </template>
+              <v-list-item-title>Logout</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-list-item>
 
       <v-divider></v-divider>
@@ -92,7 +102,7 @@
           </v-switch>
         </v-list-item>
 
-        <v-list-item>
+        <v-list-item v-if="canAddLineup">
           <v-dialog v-model="showAddScreen" max-width="800px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn
@@ -147,7 +157,11 @@ import AGENT_DATA from "@/data/agents";
 import LINEUPS_DATA, { generateTestLineups } from "@/data/lineups/lineups_data";
 import { LineupsData } from "@/data/lineups/lineups_interfaces";
 import MAP_DATA from "@/data/maps";
-import { getNameOrEmail, isLoggedIn } from "@/firebase/auth/auth";
+import {
+  checkCanAddLineup,
+  getNameOrEmail,
+  isLoggedIn,
+} from "@/firebase/auth/auth";
 import {
   addToFavourites,
   getFavourites,
@@ -187,6 +201,8 @@ export default Vue.extend({
       favourites: [] as string[],
 
       showAddScreen: false,
+
+      canAddLineup: false,
     };
   },
   methods: {
@@ -248,13 +264,12 @@ export default Vue.extend({
     pressLoginButton() {
       router.push("/login");
     },
-    pressProfileButton() {
-      router.push("/profile");
+    pressLogoutButton() {
+      router.push("/logout");
     },
     pressAddLineupButton() {
       router.push("/add");
     },
-
     async favouriteCheck(showFavouritesParam: boolean) {
       if (showFavouritesParam) {
         const favouritesLinesups = await getLineupsFavourites(this.favourites);
@@ -281,6 +296,7 @@ export default Vue.extend({
       }
     },
   },
+
   mounted() {
     // Firebase Login
     this.loggedIn = isLoggedIn();
@@ -289,6 +305,10 @@ export default Vue.extend({
     if (this.loggedIn) {
       this.setupFavouritesListener();
     }
+
+    // Check if user can add lineup
+    // Note this requires this to be set also in Firebase db permissions
+    checkCanAddLineup();
 
     // Name / Email from Firebase
     const retrievedName = getNameOrEmail();

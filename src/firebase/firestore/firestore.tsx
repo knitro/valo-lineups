@@ -30,10 +30,14 @@ export async function getLineups(
   map: ValorantMap,
   agent: ValorantAgent
 ): Promise<LineupsData[]> {
+  // Must be uppercase to search
+  const map_formatted = map.toUpperCase();
+  const agent_formatted = agent.toUpperCase();
+
   const q = query(
     collection(fs, "lineups"),
-    where("map", "==", map),
-    where("agent", "==", agent)
+    where("map", "==", map_formatted),
+    where("agent", "==", agent_formatted)
   );
 
   const querySnapshot = await getDocs(q);
@@ -98,9 +102,14 @@ export async function createLineup(data: LineupsData): Promise<boolean> {
  */
 export async function updateLineup(data: LineupsData): Promise<boolean> {
   const ref = doc(fs, `lineups`, data.id);
+
+  // Ensure uppercase formatting
+  const map_formatted = data.map.toUpperCase();
+  const agent_formatted = data.agent.toUpperCase();
+
   await updateDoc(ref, {
-    map: data.map,
-    agent: data.agent,
+    map: map_formatted,
+    agent: agent_formatted,
     site: data.site,
     name: data.name,
     locationImage: data.locationImage,
