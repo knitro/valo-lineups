@@ -32,8 +32,8 @@ export async function getLineups(
 ): Promise<LineupsData[]> {
   const q = query(
     collection(fs, "lineups"),
-    where("map", "==", map),
-    where("agent", "==", agent)
+    where("map", "==", map.toUpperCase()),
+    where("agent", "==", agent.toUpperCase())
   );
 
   const querySnapshot = await getDocs(q);

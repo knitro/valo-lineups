@@ -117,9 +117,7 @@
       <v-row no-gutters id="draggableParent">
         <v-col
           v-for="item in filteredData"
-          v-bind:key="
-            item.map + '-' + item.site + '-' + item.name.replaceAll('', '-')
-          "
+          v-bind:key="item.id"
           class="block-draggable"
           align-self="center"
           style="justify-items: center"
