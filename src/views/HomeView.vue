@@ -306,7 +306,7 @@ export default Vue.extend({
 
     // Check if user can add lineup
     // Note this requires this to be set also in Firebase db permissions
-    checkCanAddLineup();
+    this.canAddLineup = checkCanAddLineup();
 
     // Name / Email from Firebase
     const retrievedName = getNameOrEmail();
